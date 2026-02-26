@@ -29,21 +29,73 @@ def extract_with_llm(resume_text: str) -> dict:
 
     model = genai.GenerativeModel("gemini-2.5-flash")
 
-    prompt = f"""Extract the following information from the resume text below:
+    prompt = f"""**Resume Parsing Instructions**
 
-- Full Name
-- Contact Information (Email, Phone)
-- Skills
-- Education
-- Work Experience
-- Certifications
-- Projects
+**Objective:** Extract structured information from the provided resume
+text and return it in a clean JSON format.
 
-Resume Text:
+**Resume Text:**
+```
 {resume_text}
+```
 
-Return the extracted information in a clean JSON format.
-Do not include any extra text or markdown formatting like ```json or ```.
+**Extraction Fields:**
+
+1. **Full Name:**
+   - Extract the full name of the candidate.
+   - Example: "John Doe"
+
+2. **Contact Information:**
+   - **Email:** Extract the primary email address. Look for email
+     patterns like name@domain.com
+   - **Phone:** Extract the primary phone number. Look for phone
+     patterns with digits and common separators.
+
+3. **Skills:**
+   - Extract all technical and soft skills mentioned.
+   - Return as a flat list of strings.
+   - Example: ["Python", "FastAPI", "Teamwork"]
+
+4. **Education:**
+   - Extract all educational qualifications.
+   - Return as a list of dictionaries.
+   - Keys: degree, institution, year.
+   - Example: [{{"degree": "Bachelor of Science", "institution":
+     "University", "year": "2020"}}]
+
+5. **Work Experience:**
+   - Extract all work experience entries.
+   - Return as a list of dictionaries.
+   - Keys: job_title, company, duration, responsibilities.
+   - responsibilities should be a list of strings.
+   - Example: [{{"job_title": "Software Engineer", "company":
+     "Tech Corp", "duration": "2020-2022", "responsibilities":
+     ["Developed features", "Fixed bugs"]}}]
+
+6. **Certifications:**
+   - Extract all certifications and licenses.
+   - Return as a list of dictionaries.
+   - Keys: name, issuing_organization, year.
+   - Example: [{{"name": "Certified Kubernetes Administrator",
+     "issuing_organization": "CNCF", "year": "2021"}}]
+
+7. **Projects:**
+   - Extract all projects mentioned.
+   - Return as a list of dictionaries.
+   - Keys: name, description, technologies.
+   - technologies should be a list of strings.
+   - Example: [{{"name": "Resume Scanner", "description":
+     "Parse resumes", "technologies": ["Python", "FastAPI"]}}]
+
+**Important Instructions:**
+
+- Carefully search through the entire resume for contact information.
+- Look for email addresses in various formats and locations.
+- Extract phone numbers even if they are in different formats.
+- For work experience, extract all job positions and their details.
+- Include all responsibilities and achievements for each position.
+- If a field is not found, return null or empty list.
+- Return ONLY valid JSON, no markdown or extra text.
 """
 
     try:
