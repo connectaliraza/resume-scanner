@@ -2,6 +2,7 @@
 This module provides utilities for extracting structured data from resume text
 using Google Gemini.
 """
+import json
 import os
 
 import google.generativeai as genai
@@ -27,12 +28,14 @@ def extract_with_llm(resume_text: str) -> dict:
 Resume Text:
 {resume_text}
 
-Return the extracted information in JSON format.
+Return the extracted information in a clean JSON format.
+Do not include any extra text or markdown formatting like ```json or ```.
 """
 
     try:
         response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        print(f"Error during Gemini extraction: {e}")
+        # The response from Gemini is a string, so we need to parse it as JSON
+        return json.loads(response.text)
+    except (json.JSONDecodeError, Exception) as e:
+        print(f"Error during Gemini extraction or JSON parsing: {e}")
         return {}
