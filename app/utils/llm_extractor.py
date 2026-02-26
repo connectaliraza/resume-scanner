@@ -7,7 +7,10 @@ import os
 
 import google.generativeai as genai
 
-from app.utils.data_transformer import transform_skills_to_list
+from app.utils.data_transformer import (
+    transform_skills_to_list,
+    transform_to_list_of_dicts,
+)
 
 
 def _normalize_keys(data: dict) -> dict:
@@ -48,10 +51,26 @@ Do not include any extra text or markdown formatting like ```json or ```.
         parsed_json = json.loads(response.text)
         normalized_data = _normalize_keys(parsed_json)
 
-        # Transform skills to a list if it's a dictionary
+        # Transform fields to their expected data types
         if "skills" in normalized_data:
             normalized_data["skills"] = transform_skills_to_list(
                 normalized_data["skills"]
+            )
+        if "projects" in normalized_data:
+            normalized_data["projects"] = transform_to_list_of_dicts(
+                normalized_data["projects"]
+            )
+        if "education" in normalized_data:
+            normalized_data["education"] = transform_to_list_of_dicts(
+                normalized_data["education"]
+            )
+        if "work_experience" in normalized_data:
+            normalized_data["work_experience"] = transform_to_list_of_dicts(
+                normalized_data["work_experience"]
+            )
+        if "certifications" in normalized_data:
+            normalized_data["certifications"] = transform_to_list_of_dicts(
+                normalized_data["certifications"]
             )
 
         return normalized_data
