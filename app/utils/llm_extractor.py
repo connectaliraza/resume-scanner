@@ -7,6 +7,8 @@ import os
 
 import google.generativeai as genai
 
+from app.utils.data_transformer import transform_skills_to_list
+
 
 def _normalize_keys(data: dict) -> dict:
     """Converts dictionary keys from title/space case to snake_case."""
@@ -43,10 +45,16 @@ Do not include any extra text or markdown formatting like ```json or ```.
 
     try:
         response = model.generate_content(prompt)
-        # The response from Gemini is a string, so we need to parse it as JSON
         parsed_json = json.loads(response.text)
-        # Normalize keys to snake_case to match Pydantic model fields
-        return _normalize_keys(parsed_json)
+        normalized_data = _normalize_keys(parsed_json)
+
+        # Transform skills to a list if it's a dictionary
+        if "skills" in normalized_data:
+            normalized_data["skills"] = transform_skills_to_list(
+                normalized_data["skills"]
+            )
+
+        return normalized_data
     except (json.JSONDecodeError, Exception) as e:
         print(f"Error during Gemini extraction or JSON parsing: {e}")
         return {}
