@@ -3,9 +3,11 @@ from typing import Optional
 
 from app.api.base_components import BaseAPI
 from app.api.resume_scanner.controllers import ResumeScannerController
+from app.api.resume_scanner.repositories import ResumeRepository
 from app.api.resume_scanner.services import ResumeScannerService
 from app.api.user_management.controllers import UserManagementController
 from app.api.user_management.services import UserManagementService
+from app.db.database import Database
 from app.exceptions.exception_handlers import resume_processing_exception_handler
 from app.exceptions.exceptions import ResumeProcessingError
 
@@ -50,7 +52,11 @@ class AppContext:
             # Services
             logger.info("Initializing services...")
             cls.user_management_service = UserManagementService()
-            cls.resume_scanner_service = ResumeScannerService()
+
+            # Initialize database and repository for resume scanner
+            db = Database()
+            resume_repository = ResumeRepository(db)
+            cls.resume_scanner_service = ResumeScannerService(resume_repository)
 
             logger.info("Services initialized successfully")
 

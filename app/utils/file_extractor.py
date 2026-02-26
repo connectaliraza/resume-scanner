@@ -2,7 +2,7 @@
 This module provides utilities for extracting text from different file formats.
 """
 import docx
-import PyPDF2
+import pdfplumber
 
 
 def extract_text_from_docx(file_path: str) -> str:
@@ -13,9 +13,11 @@ def extract_text_from_docx(file_path: str) -> str:
 
 def extract_text_from_pdf(file_path: str) -> str:
     """Extracts text from a PDF file."""
-    with open(file_path, "rb") as f:
-        reader = PyPDF2.PdfReader(f)
-        return "\n".join([page.extract_text() for page in reader.pages])
+    text = ""
+    with pdfplumber.open(file_path) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text() + "\n"
+    return text
 
 
 def extract_text_from_txt(file_path: str) -> str:
