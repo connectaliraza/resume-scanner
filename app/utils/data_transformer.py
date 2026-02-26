@@ -41,3 +41,22 @@ def transform_skills_to_list(skills_data) -> list[str]:
             skill_list.append(key)
 
     return skill_list
+
+
+def transform_work_experience(experience_data) -> list[dict]:
+    """
+    Transforms work experience data to a list of dictionaries.
+    Handles cases where Gemini returns a single dictionary or a list of strings.
+    """
+    if isinstance(experience_data, list):
+        if all(isinstance(item, dict) for item in experience_data):
+            return experience_data  # Already in the correct format
+
+        # Convert list of strings to list of dictionaries
+        return [{"description": str(item)} for item in experience_data]
+
+    if isinstance(experience_data, dict):
+        # Convert single dictionary to a list of one dictionary
+        return [experience_data]
+
+    return []
