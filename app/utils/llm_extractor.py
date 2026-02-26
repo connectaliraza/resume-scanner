@@ -25,6 +25,10 @@ def _normalize_keys(data: dict) -> dict:
 def extract_with_llm(resume_text: str) -> dict:
     """Extracts structured data from resume text using Google Gemini."""
     api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        print("Error: GEMINI_API_KEY not found in environment variables.")
+        return {}
+
     genai.configure(api_key=api_key)
 
     model = genai.GenerativeModel("gemini-2.5-flash")
@@ -100,7 +104,19 @@ text and return it in a clean JSON format.
 
     try:
         response = model.generate_content(prompt)
-        parsed_json = json.loads(response.text)
+
+        if not response.text or not response.text.strip():
+            print("Error: Gemini returned an empty response.")
+            return {}
+
+        # Clean the response to remove markdown formatting
+        cleaned_text = response.text.strip()
+        if cleaned_text.startswith("```json"):
+            cleaned_text = cleaned_text[7:]
+        if cleaned_text.endswith("```"):
+            cleaned_text = cleaned_text[:-3]
+
+        parsed_json = json.loads(cleaned_text)
         normalized_data = _normalize_keys(parsed_json)
 
         # Transform fields to their expected data types
@@ -126,6 +142,11 @@ text and return it in a clean JSON format.
             )
 
         return normalized_data
-    except (json.JSONDecodeError, Exception) as e:
-        print(f"Error during Gemini extraction or JSON parsing: {e}")
+
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON from Gemini: {e}")
+        print(f"Raw Gemini response: {response.text}")
+        return {}
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
         return {}
