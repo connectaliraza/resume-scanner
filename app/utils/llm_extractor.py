@@ -8,6 +8,15 @@ import os
 import google.generativeai as genai
 
 
+def _normalize_keys(data: dict) -> dict:
+    """Converts dictionary keys from title/space case to snake_case."""
+    normalized_data = {}
+    for key, value in data.items():
+        normalized_key = key.lower().replace(" ", "_")
+        normalized_data[normalized_key] = value
+    return normalized_data
+
+
 def extract_with_llm(resume_text: str) -> dict:
     """Extracts structured data from resume text using Google Gemini."""
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -35,7 +44,9 @@ Do not include any extra text or markdown formatting like ```json or ```.
     try:
         response = model.generate_content(prompt)
         # The response from Gemini is a string, so we need to parse it as JSON
-        return json.loads(response.text)
+        parsed_json = json.loads(response.text)
+        # Normalize keys to snake_case to match Pydantic model fields
+        return _normalize_keys(parsed_json)
     except (json.JSONDecodeError, Exception) as e:
         print(f"Error during Gemini extraction or JSON parsing: {e}")
         return {}
