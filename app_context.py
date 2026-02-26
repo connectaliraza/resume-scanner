@@ -6,6 +6,8 @@ from app.api.resume_scanner.controllers import ResumeScannerController
 from app.api.resume_scanner.services import ResumeScannerService
 from app.api.user_management.controllers import UserManagementController
 from app.api.user_management.services import UserManagementService
+from app.exceptions.exception_handlers import resume_processing_exception_handler
+from app.exceptions.exceptions import ResumeProcessingError
 
 logger = logging.getLogger(__name__)
 # config = AppConfig.from_yaml()
@@ -75,6 +77,9 @@ class AppContext:
 
             # Register controllers
             cls.api.register_controllers(controllers=cls.controllers)
+            cls.api.register_exception_handlers(
+                [(ResumeProcessingError, resume_processing_exception_handler)]
+            )
             logger.info("Controllers registered successfully")
 
             # Register exception handlers
